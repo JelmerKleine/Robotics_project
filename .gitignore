@@ -1,0 +1,14 @@
+*.swp
+*~
+*.pyc
+/logs
+/build
+/devel
+.catkin_tools
+
+core
+.vscode/
+
+# generated
+libmavconn/include/mavconn/mavlink_dialect.h
+libmavconn/src/mavlink_helpers.cpp
