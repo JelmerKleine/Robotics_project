@@ -377,75 +377,75 @@
       <pose>-22.9341 3.07861 0 0 -0 0</pose>
     </model>
     <state world_name='default'>
-      <sim_time>377 61000000</sim_time>
-      <real_time>385 431731833</real_time>
-      <wall_time>1624018945 107806362</wall_time>
-      <iterations>377061</iterations>
+      <sim_time>2357 99000000</sim_time>
+      <real_time>2035 77849516</real_time>
+      <wall_time>1624022114 273684093</wall_time>
+      <iterations>1980038</iterations>
       <model name='ambulance'>
-        <pose>-20 -25 0 0 -0 0</pose>
+        <pose>-9 0 0 0 -0 1.57</pose>
         <scale>1 1 1</scale>
         <link name='link'>
-          <pose>-20 -25 0 0 -0 0</pose>
+          <pose>-9 0 0 0 -0 1.57</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
       <model name='ambulance_0'>
-        <pose>-20 -7 0 0 -0 0</pose>
+        <pose>9 0 0 0 -0 1.57</pose>
         <scale>1 1 1</scale>
         <link name='link'>
-          <pose>-20 -7 0 0 -0 0</pose>
+          <pose>9 0 0 0 -0 1.57</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
       <model name='asphalt_plane'>
-        <pose>0 0 0 0 -0 0</pose>
+        <pose>-5 0 0 0 -0 0</pose>
         <scale>1 1 1</scale>
         <link name='link'>
-          <pose>0 0 0 0 -0 0</pose>
+          <pose>-5 0 0 0 -0 0</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
       <model name='asphalt_plane_0'>
-        <pose>-20 0 0 0 -0 0</pose>
+        <pose>15 20 0 0 -0 0</pose>
         <scale>1 1 1</scale>
         <link name='link'>
-          <pose>-20 0 0 0 -0 0</pose>
+          <pose>15 20 0 0 -0 0</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
       <model name='asphalt_plane_1'>
-        <pose>0 -20 0 0 -0 0</pose>
+        <pose>15 -0.061429 0 0 -0 0</pose>
         <scale>1 1 1</scale>
         <link name='link'>
-          <pose>0 -20 0 0 -0 0</pose>
+          <pose>15 -0.061429 0 0 -0 0</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
       <model name='asphalt_plane_2'>
-        <pose>-20 -20 0 0 -0 0</pose>
+        <pose>-5 20 0 0 -0 0</pose>
         <scale>1 1 1</scale>
         <link name='link'>
-          <pose>-20 -20 0 0 -0 0</pose>
+          <pose>-5 20 0 0 -0 0</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
       <model name='bus'>
-        <pose>-20 4 0 0 -0 0</pose>
+        <pose>20 0 0 0 -0 1.57</pose>
         <scale>1 1 1</scale>
         <link name='link'>
-          <pose>-20 4 0 0 -0 0</pose>
+          <pose>20 0 0 0 -0 1.57</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
@@ -467,7 +467,7 @@
     </state>
     <gui fullscreen='0'>
       <camera name='user_camera'>
-        <pose>30.2617 -4.79219 41.7953 -0 0.783643 -3.04299</pose>
+        <pose>-1.29681 50.7964 39.8982 -0 0.817797 -1.51498</pose>
         <view_controller>orbit</view_controller>
         <projection_type>perspective</projection_type>
       </camera>
