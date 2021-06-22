@@ -9,30 +9,30 @@ car:
   rr_wheel_controller:
     type: effort_controllers/JointEffortController
     joint: wheel_rr
-    pid: {p: 100.0, i: 0.1, d: 10.0}
+    pid: {p: 100.0, i: 0.1, d: 1}
 
   rl_wheel_controller:
     type: effort_controllers/JointEffortController
     joint: wheel_rl
-    pid: {p: 100.0, i: 0.1, d: 10.0}
+    pid: {p: 100.0, i: 0.1, d: 1}
 
   fr_wheel_controller:
     type: effort_controllers/JointEffortController
     joint: wheel_fr
-    pid: {p: 100.0, i: 0.1, d: 10.0}
+    pid: {p: 100.0, i: 0.1, d: 1}
 
   fl_wheel_controller:
     type: effort_controllers/JointEffortController
     joint: wheel_fl
-    pid: {p: 100.0, i: 0.1, d: 10.0}
+    pid: {p: 100.0, i: 0.1, d: 1}
 
   # Position Controllers ---------------------------------------
   fr_steer_controller:
     type: effort_controllers/JointPositionController
     joint: steer_fr
-    pid: {p: 100.0, i: 0.1, d: 10.0}
+    pid: {p: 100.0, i: 0.1, d: 1}
 
   fl_steer_controller:
     type: effort_controllers/JointPositionController
     joint: steer_fl
-    pid: {p: 100.0, i: 0.1, d: 10.0}
+    pid: {p: 100.0, i: 0.1, d: 1}

@@ -127,6 +127,27 @@
       </collision>
     </link>
 
+    <link name="laser">
+      <collision>
+        <origin xyz="0 0 0" rpy="1.5707 0 4.71"/>
+        <geometry>
+          <mesh filename="package://robotics/meshes/rplidar.dae" scale="0.001 0.001 0.001" />
+        </geometry>
+      </collision>
+  
+      <visual>
+        <origin xyz="0 0 0" rpy="1.5707 0 4.71"/>
+        <geometry>
+          <mesh filename="package://robotics/meshes/rplidar.dae" scale="0.001 0.001 0.001" />
+        </geometry>
+      </visual>
+  
+      <inertial>
+        <mass value="1e-5" />
+        <origin xyz="0 0 0" rpy="1.5707 0 4.71"/>
+        <inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0" />
+      </inertial>
+    </link>
     <joint name="base_link" type="fixed">
       <origin xyz="0 0 0.33" rpy="0 0 0"/>
       <parent link="base_footprint"/>
@@ -179,6 +200,13 @@
       <child link="wheel_rr"/>
       <axis xyz="0 0 1.0"/>
       <limit effort="5000.0" velocity="22.0"/>
+    </joint>
+
+    <joint name="rplidar_joint" type="fixed">
+      <axis xyz="0 1 0" />
+      <origin xyz="3 0 0.7" rpy="0 0 3.14"/>
+      <parent link="base_link"/>
+      <child link="laser"/>
     </joint>
 
   <!-- Transmission Tags -->
@@ -249,7 +277,7 @@
     </actuator>
   </transmission>
 
-
+  
   <!-- Plugin Definitions -->
 
    
