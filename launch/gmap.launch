@@ -8,6 +8,8 @@
     <param name="xmax" value="20"/>
     <param name="ymin" value="-20"/>
     <param name="ymax" value="20"/>
+    <param name="linearUpdate" value="0" />
+    <param name="angularUpdate" value="0" />
     <remap from="scan" to="/car/laser/scan"/>
     <param name="base_frame" value="/base_link" />
     <param name="odom_frame" value="/base_link" />
