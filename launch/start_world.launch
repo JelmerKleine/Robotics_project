@@ -25,7 +25,7 @@
   <rosparam file="$(find robotics)/config/car_controller.yaml" command="load"/>
 
   <!-- load the controllers -->
-  <!--node name="controller_spawner"
+  <node name="controller_spawner"
     pkg="controller_manager"
     type="spawner" respawn="false"
     output="screen" ns="/car"
@@ -36,11 +36,11 @@
       fl_wheel_controller
       fr_steer_controller
       fl_steer_controller"
-  /-->
+  />
 
-
-<!-- convert joint states to TF transforms for rviz, etc -->
+  <!-- convert joint states to TF transforms for rviz, etc -->
   <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" respawn="false" output="screen">
     <remap from="/joint_states" to="/car/joint_states" />
   </node>
+
 </launch>

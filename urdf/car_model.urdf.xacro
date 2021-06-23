@@ -148,6 +148,7 @@
         <inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0" />
       </inertial>
     </link>
+    
     <joint name="base_link" type="fixed">
       <origin xyz="0 0 0.33" rpy="0 0 0"/>
       <parent link="base_footprint"/>
@@ -204,11 +205,11 @@
 
     <joint name="rplidar_joint" type="fixed">
       <axis xyz="0 1 0" />
-      <origin xyz="3 0 0.7" rpy="0 0 3.14"/>
+      <origin xyz="3 0 0.65" rpy="0 0 3.14"/>
       <parent link="base_link"/>
       <child link="laser"/>
     </joint>
-
+    
   <!-- Transmission Tags -->
 
   <transmission name="tran1">
@@ -278,8 +279,38 @@
   </transmission>
 
   
-  <!-- Plugin Definitions -->
-
+    <!-- RpLidar A2 using CPU -->
+    <gazebo reference="laser">
+      <sensor type="ray" name="head_rplidar_sensor">
+        <pose>0 0 0.06 0 0 0</pose>
+        <visualize>false</visualize>
+        <update_rate>40</update_rate>
+        <ray>
+          <scan>
+            <horizontal>
+              <samples>720</samples>
+              <resolution>1</resolution>
+              <min_angle>-3.14159265</min_angle>
+              <max_angle>3.14159265</max_angle>
+            </horizontal>
+          </scan>
+          <range>
+            <min>0.2</min>
+            <max>12.0</max>
+            <resolution>0.01</resolution>
+          </range>
+          <noise>
+            <type>gaussian</type>
+            <mean>0.0</mean>
+            <stddev>0.01</stddev>
+          </noise>
+        </ray>
+        <plugin name="gazebo_ros_head_rplidar_controller" filename="libgazebo_ros_laser.so">
+          <topicName>car/laser/scan</topicName>
+          <frameName>laser</frameName>
+        </plugin>
+      </sensor>
+    </gazebo> 
    
   <gazebo>
     <plugin name="p3d_base_controller" filename="libgazebo_ros_p3d.so">
@@ -293,11 +324,13 @@
       <rpyOffset>0 0 0</rpyOffset>
     </plugin>
 
+
     <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
       <robotNamespace>/car</robotNamespace>
     </plugin>
   </gazebo>
 
+  
 
     <material name="black.001">
       <color rgba="0 0 0 1.0"/>
