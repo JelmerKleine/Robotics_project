@@ -8,6 +8,14 @@ import math
 from nav_msgs.msg import Odometry
 from std_msgs.msg import Float64
 
+def findObstacles(data):
+    print(data)
+    for item in data:
+        if(item == "inf")
+
+
+
+
 def main():
     rospy.init_node('car', anonymous=True) #make node
    
