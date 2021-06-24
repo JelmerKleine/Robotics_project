@@ -19,7 +19,7 @@
          command="$(find xacro)/xacro  '$(find robotics)/urdf/car_model.urdf.xacro'"/>
 
  <node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen"
-    args="-urdf -model car -x 20 -y 20 -param robot_description"/>
+    args="-urdf -model car -x -4 -y 3 -param robot_description"/>
 
 
   <rosparam file="$(find robotics)/config/car_controller.yaml" command="load"/>
@@ -35,13 +35,12 @@
       fr_wheel_controller
       fl_wheel_controller
       fr_steer_controller
-      fl_steer_controller
-"
+      fl_steer_controller"
   />
 
-
-<!-- convert joint states to TF transforms for rviz, etc -->
+  <!-- convert joint states to TF transforms for rviz, etc -->
   <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" respawn="false" output="screen">
     <remap from="/joint_states" to="/car/joint_states" />
   </node>
+
 </launch>
