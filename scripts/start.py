@@ -19,10 +19,31 @@ def callback(msg):
 scan =Float32()
 laser_data = rospy.Subscriber('/car/laser/scan',LaserScan,callback)
 
+lidarPos = [0, 0]
+
+def getYOffset(hypotenuse, angle):  # Opposite line
+    return(math.sin(90 - angle) * hypotenuse)
+
+def getXOffset(hypotenuse, angle):  # Adjecent line
+    return(math.cos(90 - angle) * hypotenuse)
+
+
+def getCoordinate(length, angle):
+    return [lidarPos[0] + getXOffset(length, angle), lidarPos[1] + getYOffset(length, angle)]
+
+
+
 def findObstacles(data):
     print(data)
-    for item in data:
-        if(item == "inf")
+
+    # Calc angle between each scan
+    count = 360 / len(data)
+
+    validCoordinates = []
+    for item in data:  # Loop through data and find coordinate
+        angle = angle + count
+        if(item is not "inf"):  # Check if laser actually hit something
+            validCoordinates.append(getCoordinate(item, angle))
 
 
 
@@ -30,12 +51,13 @@ def findObstacles(data):
 def main():
     rospy.init_node('car', anonymous=True) #make node
    
-    while not rospy.is_shutdown(): 
-	print("moving")
+    while not rospy.is_shutdown():
+	    print("moving")
         speed = 0
         steer = 0
         driveVehicle(speed,steer) 
         scannerData()
+
 
 def driveVehicle(vel_cmd,steer_cmd):
     wheel_rear_right = rospy.Publisher('/car/rr_wheel_controller/command', Float64, queue_size=10)
