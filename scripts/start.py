@@ -11,18 +11,22 @@ from std_msgs.msg import Float32
 from sensor_msgs.msg import LaserScan
 import sensor_msgs.msg
 
+scan = Float32()
+scanIncrement = Float32()
+validCoordinates = []
+
 def callback(msg):
-    #print(len(msg.ranges)) len is 2019 from 0-360
     scan.data = msg.ranges
+    scanIncrement.data = msg.angle_increment
     
-    
-scan =Float32()
+
 laser_data = rospy.Subscriber('/car/laser/scan',LaserScan,callback)
 
 lidarPos = [0, 0]
 
 def getYOffset(hypotenuse, angle):  # Opposite line
     return(math.sin(90 - angle) * hypotenuse)
+
 
 def getXOffset(hypotenuse, angle):  # Adjecent line
     return(math.cos(90 - angle) * hypotenuse)
@@ -32,17 +36,16 @@ def getCoordinate(length, angle):
     return [lidarPos[0] + getXOffset(length, angle), lidarPos[1] + getYOffset(length, angle)]
 
 
-
 def findObstacles(data):
-    print(data)
-
     # Calc angle between each scan
-    count = 360 / len(data)
+    count = scanIncrement.data
+    angle = 0
 
+    global validCoordinates
     validCoordinates = []
     for item in data:  # Loop through data and find coordinate
         angle = angle + count
-        if(item is not "inf"):  # Check if laser actually hit something
+        if(item < 30):  # Check if laser actually hit something
             validCoordinates.append(getCoordinate(item, angle))
 
 
@@ -50,13 +53,15 @@ def findObstacles(data):
 
 def main():
     rospy.init_node('car', anonymous=True) #make node
-   
+    
     while not rospy.is_shutdown():
-	    print("moving")
+        print("Moving")
         speed = 0
         steer = 0
-        driveVehicle(speed,steer) 
-        scannerData()
+        driveVehicle(speed, steer)
+        findObstacles(scan.data)
+        if (len(validCoordinates) is not 0):
+            print(validCoordinates[0])
 
 
 def driveVehicle(vel_cmd,steer_cmd):
@@ -75,14 +80,5 @@ def driveVehicle(vel_cmd,steer_cmd):
     rate.sleep()
 
 
-    
-
-
-
-def scannerData():
-    print(scan)
-    laser_data = rospy.Subscriber('/car/laser/scan',LaserScan,callback)
-
 if __name__ == "__main__":
-    
     main()    
