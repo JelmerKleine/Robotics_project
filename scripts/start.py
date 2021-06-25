@@ -14,7 +14,8 @@ import sensor_msgs.msg
 
 scan = Float32()
 scanIncrement = Float32()
-validCoordinates = []
+validCoordinatesBack = []
+validCoordinatesFront = []
 lidarPos = [0, 0]
 
 def callback(msg):
@@ -25,111 +26,103 @@ laser_data = rospy.Subscriber('/car/laser/scan',LaserScan,callback)
     
 
 def getYOffset(hypotenuse, angle):  # Opposite line
-    return(math.sin((angle * 57.2957795)) * hypotenuse)
+    return(math.sin(angle) * hypotenuse)
 
 
 def getXOffset(hypotenuse, angle):  # Adjecent line
-    return(math.cos((angle * 57.2957795)) * hypotenuse)
+    return(math.cos(angle) * hypotenuse)
 
 
-def getCoordinate(length, angle):
+def getCoordinateFront(length, angle):
     return [lidarPos[0] + getXOffset(length, angle), lidarPos[1] + getYOffset(length, angle)]
 
 
-def findObstacles(data):
+def getCoordinateBack(length, angle):
+    return [lidarPos[0] + getXOffset(length, angle), lidarPos[1] + -getYOffset(length, angle)]
+
+
+def findObstacles(data):  # Lidar works from back and rotates counter clockwise
     # Calc angle between each scan
     count = scanIncrement.data
     angle = 0
 
-    global validCoordinates
-    validCoordinates = []
+    global validCoordinatesBack
+    global validCoordinatesFront
+    validCoordinatesFront = []
+    validCoordinatesBack = []
     for length in data:  # Loop through data and find coordinate
         angle = angle + count
         if(length < 30):  # Check if laser actually hit something
-            if(angle < 90):
-                cord = getCoordinate(length, angle)
-                validCoordinates.append(cord)
-            elif(angle > 90 and angle < 180):
-                cord = getCoordinate(length, (angle - 90))
-                validCoordinates.append(cord)
+            if(angle < (math.pi / 2)):  # Back 90 degrees
+                cord = getCoordinateBack(length, ((math.pi / 2) - angle))
+                validCoordinatesBack.append(cord)
+            elif(angle > (math.pi / 2) and angle < math.pi):  # Front 90 degrees
+                cord = getCoordinateFront(length, (angle - (math.pi / 2)))
+                validCoordinatesFront.append(cord)
             
 
+# No longer in use(splits at getting correct cords)
+# def splitList(cords):
+#     # Split cord in two list
+#     prev = cords[0]
+#     validList1 = []  # consists of top group of cords(obstacle 1)
+#     validList2 = []  # consists of bottom group of cords(obstacle 2)
+#     next = False
+#     for cord in cords:
+#         if((cord[1] - prev[1]) > -3 and not next):
+#             validList1.append(cord)
+#         elif(not next):
+#             next = True
+#             prev = cord
+#         elif(next):
+#             validList2.append(cord)
+#         prev = cord
+#     return validList1, validList2
 
-def splitList(cords):
-    # Split cord in two list
-    prev = cords[0]
-    validList1 = []  # consists of top group of cords(obstacle 1)
-    validList2 = []  # consists of bottom group of cords(obstacle 2)
-    next = False
-    for cord in cords:
-        if((cord[1] - prev[1]) > -3 and not next):
-            validList1.append(cord)
-        elif(not next):
-            next = True
-            prev = cord
-        elif(next):
-            validList2.append(cord)
-        prev = cord
-    return validList1, validList2
 
-
-def getCornersTop(obstacle1):
-    prev = obstacle1[0]
+def getCornersTop(obstacle):
+    prev = obstacle[0]
     currenty = 0
     leftx = 0
     rightx = 0
-    for point in obstacle1:  # Find lowest y from list
+    
+    for point in obstacle:  # Find lowest y from list
         if(point[1] < prev[1]):
             currenty = point[1]
     
-    for point in obstacle1:  # Remove front portion of the back
+    for point in obstacle:  # Remove front portion of the back
         if(point[1] > (currenty + 2)):
-            obstacle1.remove(point)
+            obstacle.remove(point)
 
-    prev = obstacle1[0]
-    leftx = obstacle1[0][0]
-    for point in obstacle1:  # Find lowest x from list
+    prev = obstacle[0]
+    leftx = obstacle[0][0]
+    for point in obstacle:  # Find lowest x from list
         if(point[0] < prev[0]):
             leftx = point[0]
     
-    prev = obstacle1[0]
-    rightx = obstacle1[0][0]
-    for point in obstacle1:  # Find highest x from list
+    prev = obstacle[0]
+    rightx = obstacle[0][0]
+    for point in obstacle:  # Find highest x from list
         if(point[0] > prev[0]):
             rightx = point[0]
 
     return [[leftx, currenty], [rightx, currenty]]
 
 
-def getCornersBottom(obstacle1):
-    prev = obstacle1[0]
-    currenty = obstacle1[0][1]
-    leftx = obstacle1[0][0]
-    rightx = obstacle1[0][0]
-    for point in obstacle1:  # Find highest y from list
+def getYBottom(obstacle):
+    prev = obstacle[0]
+    currenty = obstacle[0][1]
+    for point in obstacle:  # Find highest y from list
         if(point[1] > prev[1]):
             currenty = point[1]
-    
-    for point in obstacle1:  # Remove back portion of the front
-        if(point[1] < (currenty - 2)):
-            obstacle1.remove(point)
 
-    prev = obstacle1[0]
-    for point in obstacle1:  # Find lowest x from list
-        if(point[0] < prev[0]):
-            leftx = point[0]
-    
-    prev = obstacle1[0]
-    for point in obstacle1:  # Find highest x from list
-        if(point[0] > prev[0]):
-            rightx = point[0]
-
-    return [[leftx, currenty], [rightx, currenty]]
+    return currenty
         
 
-def getObstacles(obstacle1List, obstacle2List):
-    obstacle1 = getCornersTop(obstacle1List)
-    obstacle2 = getCornersBottom(obstacle2List)
+def getObstacles():  # Obstacle 1 is behind car, obstacle 2 is in front of car
+    obstacle2 = getCornersTop(validCoordinatesFront)
+    obstacle1y = getYBottom(validCoordinatesBack)
+    obstacle1 = [[obstacle2[0][0], obstacle1y], [obstacle2[1][0], obstacle1y]]
     return obstacle1, obstacle2
 
 
@@ -140,12 +133,6 @@ def main():
     obstacle2 = 0
     done = False
 
-    
-
-    
-    
-    
-    
     while not rospy.is_shutdown():
         print("Moving")
         speed = 0
@@ -154,8 +141,7 @@ def main():
         if ((obstacle1 == 0) or (obstacle2 == 0) and not done):
             done = True
             findObstacles(scan.data)
-            obstacle1List, obstacle2List = splitList(validCoordinates)
-            obstacle1, obstacle2 = getObstacles(obstacle1List, obstacle2List)
+            obstacle1, obstacle2 = getObstacles()
             print("obstacle1", obstacle1)
             print("obstacle2", obstacle2)
 

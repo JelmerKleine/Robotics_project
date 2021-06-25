@@ -283,15 +283,15 @@
     <gazebo reference="laser">
       <sensor type="ray" name="head_rplidar_sensor">
         <pose>0 0 0.06 0 0 0</pose>
-        <visualize>false</visualize>
+        <visualize>true</visualize>
         <update_rate>40</update_rate>
         <ray>
           <scan>
             <horizontal>
-              <samples>720</samples>
+              <samples>360</samples>
               <resolution>1</resolution>
               <min_angle>0</min_angle>
-              <max_angle>6.28319</max_angle>
+              <max_angle>3.14</max_angle>
             </horizontal>
           </scan>
           <range>
