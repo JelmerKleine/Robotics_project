@@ -14,19 +14,21 @@ import sensor_msgs.msg
 
 scan = Float32()
 scanIncrement = Float32()
-currentX = Float64()
-currentY = Float64()
+currentVehiclePos = [Float64(), Float64()]
 validCoordinatesBack = []
 validCoordinatesFront = []
-lidarPos = [0, 0]
+baseLinkOffset = [0, -1]
+
+def getCurrentVehiclePos():
+    return [currentVehiclePos[0].data, currentVehiclePos[1].data]
 
 def laserCallback(msg):
     scan.data = msg.ranges
     scanIncrement.data = msg.angle_increment
 
 def vehicleCallback(msg):
-    currentX.data = msg.pose.pose.position.x
-    currentY.data = msg.pose.pose.position.y
+    currentVehiclePos[0].data = msg.pose.pose.position.x
+    currentVehiclePos[1].data = msg.pose.pose.position.y
     
 
 laser_data = rospy.Subscriber('/car/laser/scan',LaserScan,laserCallback)
@@ -43,11 +45,11 @@ def getXOffset(hypotenuse, angle):  # Adjecent line
 
 
 def getCoordinateFront(length, angle):
-    return [lidarPos[0] + getXOffset(length, angle), lidarPos[1] + getYOffset(length, angle)]
+    return [baseLinkOffset[0] + getXOffset(length, angle), baseLinkOffset[1] + getYOffset(length, angle)]
 
 
 def getCoordinateBack(length, angle):
-    return [lidarPos[0] + getXOffset(length, angle), lidarPos[1] + -getYOffset(length, angle)]
+    return [baseLinkOffset[0] + getXOffset(length, angle), baseLinkOffset[1] + -getYOffset(length, angle)]
 
 
 def findObstacles(data):  # Lidar works from back and rotates counter clockwise
@@ -139,20 +141,25 @@ def main():
     rospy.init_node('car', anonymous=True) #make node
     obstacle1 = 0
     obstacle2 = 0
+    startPos = [0, 0]
+
+
     done = False
     while not rospy.is_shutdown():
         #print("Moving")
         speed = 0
         steer = 0
         driveVehicle(speed, steer)
+        print(getCurrentVehiclePos())
+        print(startPos)
         if ((obstacle1 == 0) or (obstacle2 == 0) and not done):
             done = True
             findObstacles(scan.data)
             obstacle1, obstacle2 = getObstacles()
             print("obstacle1", obstacle1)
             print("obstacle2", obstacle2)
-            startPos=[currentX.data,currentY.data]
-            print(startPos)
+            startPos = getCurrentVehiclePos()
+            print("startPos", startPos)
             
         
 
