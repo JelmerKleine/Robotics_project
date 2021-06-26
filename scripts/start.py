@@ -14,16 +14,25 @@ import sensor_msgs.msg
 
 scan = Float32()
 scanIncrement = Float32()
+currentX = Float64()
+currentY = Float64()
 validCoordinatesBack = []
 validCoordinatesFront = []
 lidarPos = [0, 0]
 
-def callback(msg):
+def laserCallback(msg):
     scan.data = msg.ranges
     scanIncrement.data = msg.angle_increment
 
-laser_data = rospy.Subscriber('/car/laser/scan',LaserScan,callback)
+def vehicleCallback(msg):
+    currentX.data = msg.pose.pose.position.x
+    currentY.data = msg.pose.pose.position.y
     
+
+laser_data = rospy.Subscriber('/car/laser/scan',LaserScan,laserCallback)
+vehicle_position = rospy.Subscriber('/ground_truth/state',Odometry,vehicleCallback)
+
+  
 
 def getYOffset(hypotenuse, angle):  # Opposite line
     return(math.sin(angle) * hypotenuse)
@@ -128,11 +137,9 @@ def getObstacles():  # Obstacle 1 is behind car, obstacle 2 is in front of car
 
 def main():
     rospy.init_node('car', anonymous=True) #make node
-
     obstacle1 = 0
     obstacle2 = 0
     done = False
-
     while not rospy.is_shutdown():
         #print("Moving")
         speed = 0
@@ -144,7 +151,10 @@ def main():
             obstacle1, obstacle2 = getObstacles()
             print("obstacle1", obstacle1)
             print("obstacle2", obstacle2)
-
+            startPos=[currentX.data,currentY.data]
+            print(startPos)
+            
+        
 
 def driveVehicle(vel_cmd,steer_cmd):
     wheel_rear_right = rospy.Publisher('/car/rr_wheel_controller/command', Float64, queue_size=10)
