@@ -134,7 +134,7 @@ def main():
     done = False
 
     while not rospy.is_shutdown():
-        print("Moving")
+        #print("Moving")
         speed = 0
         steer = 0
         driveVehicle(speed, steer)

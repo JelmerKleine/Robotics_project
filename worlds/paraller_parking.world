@@ -201,35 +201,35 @@
       <pose>-22.9341 3.07861 0 0 -0 0</pose>
     </model>
     <state world_name='default'>
-      <sim_time>2589 354000000</sim_time>
-      <real_time>89 228729804</real_time>
-      <wall_time>1624541197 677610223</wall_time>
-      <iterations>85690</iterations>
+      <sim_time>2405 620000000</sim_time>
+      <real_time>52 273884788</real_time>
+      <wall_time>1624535873 909427918</wall_time>
+      <iterations>48521</iterations>
       <model name='ambulance'>
-        <pose>24 20 0 0 -0 1.57</pose>
+        <pose>-8 0 0 0 -0 1.57</pose>
         <scale>1 1 1</scale>
         <link name='link'>
-          <pose>24 20 0 0 -0 1.57</pose>
+          <pose>-8 0 0 0 -0 1.57</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
       <model name='ambulance_0'>
-        <pose>8 20 0 0 -0 1.57</pose>
+        <pose>8 0 0 0 -0 1.57</pose>
         <scale>1 1 1</scale>
         <link name='link'>
-          <pose>8 20 0 0 -0 1.57</pose>
+          <pose>8 0 0 0 -0 1.57</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
       <model name='bus'>
-        <pose>-3 20 0 0 -0 1.57</pose>
+        <pose>20 0 0 0 -0 1.57</pose>
         <scale>1 1 1</scale>
         <link name='link'>
-          <pose>-3 20 0 0 -0 1.57</pose>
+          <pose>20 0 0 0 -0 1.57</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
@@ -251,7 +251,7 @@
     </state>
     <gui fullscreen='0'>
       <camera name='user_camera'>
-        <pose>1.41228 58.8802 35.8036 0 0.681797 -1.21897</pose>
+        <pose>1.54771 46.9061 10.6308 0 0.253797 -1.78698</pose>
         <view_controller>orbit</view_controller>
         <projection_type>perspective</projection_type>
       </camera>
