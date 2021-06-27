@@ -52,11 +52,14 @@ validCoordinatesFront = []
 
 startPos = [0, 0]
 currentVehiclePos = [Float64(), Float64()]
+currentVehicleSpeed = Float64()
 goalPos = [0, 0]
-flag = 0
+
+step = 0
+count = 0
 
 def getCurrentVehiclePos():
-    return [currentVehiclePos[0].data, currentVehiclePos[1].data]
+    return [currentVehiclePos[0].data  - startPos[0], currentVehiclePos[1].data - startPos[1]]
 
 def laserCallback(msg):
     scan.data = msg.ranges
@@ -64,7 +67,8 @@ def laserCallback(msg):
 
 def vehicleCallback(msg):
     currentVehiclePos[0].data = msg.pose.pose.position.x
-    currentVehiclePos[1].data = msg.pose.pose.position.y
+    currentVehiclePos[1].data = msg.pose.pose.position.y * -1.0
+    currentVehicleSpeed.data = msg.twist.twist.linear.x
     
 
 laser_data = rospy.Subscriber('/car/laser/scan',LaserScan,laserCallback)
@@ -106,25 +110,6 @@ def findObstacles(data):  # Lidar works from back and rotates counter clockwise
             elif(angle > (math.pi / 2) and angle < math.pi):  # Front 90 degrees
                 cord = getCoordinateFront(length, (angle - (math.pi / 2)))
                 validCoordinatesFront.append(cord)
-            
-
-# No longer in use(splits at getting correct cords)
-# def splitList(cords):
-#     # Split cord in two list
-#     prev = cords[0]
-#     validList1 = []  # consists of top group of cords(obstacle 1)
-#     validList2 = []  # consists of bottom group of cords(obstacle 2)
-#     next = False
-#     for cord in cords:
-#         if((cord[1] - prev[1]) > -3 and not next):
-#             validList1.append(cord)
-#         elif(not next):
-#             next = True
-#             prev = cord
-#         elif(next):
-#             validList2.append(cord)
-#         prev = cord
-#     return validList1, validList2
 
 
 def getCornersTop(obstacle):
@@ -173,44 +158,49 @@ def getObstacles():  # Obstacle 1 is behind car, obstacle 2 is in front of car
     return obstacle1, obstacle2
 
 
-def calcTransition(obstacle1, obstacle2):  # Calculate the transition for parking
-    r_prime = Ri_min + width/2
-    
-    c1 = [goalPos[0], goalPos[1] + r_prime]
-    y_c2 = startPos[1] - r_prime
+def parkVehicle(obstacle1, obstacle2):
+    global step
+    global count
+    vel = 0
+    steer = 0
 
-    pt = [
-        (c1[1] + y_c2) / 2,
-        0
-    ]
-
-    pt[1] = c1[1] + np.sqrt(r_prime**2 - (pt[0] - c1[0])**2)
-    return pt
-
-
-def parkVehicle(start_pos, transition_pos, goal_pos, update_pos):
-    if update_pos[0]>start_pos[0]:
-        vel = -12
+    if(step == 1):
+        if(getCurrentVehiclePos()[0] < obstacle2[1][1]):
+            print(step, "Moving forward...")
+            vel = 12
+            steer = 0
+        else:
+            step = 2
+    elif(step == 2):
+        print(getCurrentVehiclePos()[1], (obstacle1[1][0] - obstacle1[0][0]))
+        if(getCurrentVehiclePos()[1] < (obstacle1[1][0] - obstacle1[0][0] - (width/1.5))):
+            print(step, "Turning into spot...")
+            vel = -100
+            steer = -0.45
+            count = count + 1
+        else:
+            step = 3
+            steer = 0.2
+            #count = count - 20  # Account for positive velocity first
+    elif(step == 3):
+        if(count > 0):
+            print(step, "Straigtening...")
+            vel = -100
+            steer = 0.45
+            count = count - 1
+        else:
+            step = 4
+    elif(step == 4):
+        if(True):
+            print(step, "Halting...")
+            vel = -100.0 * (currentVehicleSpeed.data)
+            steer = 0
+    elif(step == 0):
+        print("Vehicle init not complete!")
+        vel = 0
         steer = 0
-        
-    elif update_pos[0]<=(start_pos[0]) and update_pos[0]>(transition_pos[0]):
-        vel = -104
-        steer = -0.49
 
-    elif update_pos[0]<=(transition_pos[0]) and update_pos[0]>(goal_pos[0]-0.5) and flag == 0:
-        steer = 0.49
-        vel = -104
-    elif update_pos[0]<=goal_pos[0]-0.5:
-        steer = 0
-        vel = 20
-        global flag
-        flag = 1
-        
-    elif flag == 1:
-        steer = 0
-        vel = -5
-
-    return vel, steer  
+    return vel, steer
 
 
 def main():
@@ -228,14 +218,19 @@ def main():
             obstacle1, obstacle2 = getObstacles()
             print("obstacle1", obstacle1)
             print("obstacle2", obstacle2)
-            startPos = getCurrentVehiclePos()
+
+            global startPos
+            startPos = [currentVehiclePos[0].data, currentVehiclePos[1].data]
             print("startPos", startPos)
+
             goalPos = [(obstacle2[1][1] - obstacle1[1][1]) / 2, (obstacle1[1][0] - obstacle1[0][0]) / 2]
             print("goalPos", goalPos)
-            print("currtentPos", getCurrentVehiclePos())
-        else:
-            continue
-        velocity, steer = parkVehicle(startPos, calcTransition(obstacle1, obstacle2), goalPos, getCurrentVehiclePos())
+            
+            print("currentPos", getCurrentVehiclePos())
+            global step
+            step = 1
+        
+        velocity, steer = parkVehicle(obstacle1, obstacle2)
         driveVehicle(velocity, steer)
 
             
