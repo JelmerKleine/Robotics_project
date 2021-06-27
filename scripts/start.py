@@ -165,7 +165,7 @@ def parkVehicle(obstacle1, obstacle2):
     steer = 0
 
     if(step == 1):
-        if(getCurrentVehiclePos()[0] < obstacle2[1][1]):
+        if(getCurrentVehiclePos()[0] < (obstacle2[1][1]+2)):
             print(step, "Moving forward...")
             vel = 12
             steer = 0
@@ -191,6 +191,13 @@ def parkVehicle(obstacle1, obstacle2):
         else:
             step = 4
     elif(step == 4):
+        if((obstacle2[1][1]+ obstacle2[1][1])/2 < getCurrentVehiclePos()[0]):
+            print(step, "positioning...")
+            vel = 12
+            steer = 0
+        else:
+            step = 5
+    elif(step == 5):
         if(True):
             print(step, "Halting...")
             vel = -100.0 * (currentVehicleSpeed.data)
