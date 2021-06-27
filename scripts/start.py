@@ -12,18 +12,69 @@ from std_msgs.msg import Float32
 from sensor_msgs.msg import LaserScan
 import sensor_msgs.msg
 
+# Vehicle Properties (From vehicle source)
+baseLinkOffset = [0, -1]
+
+# overall length of the vehicle (meters)
+length = 4.88
+
+# overall wheel base of the vehicle (meters)
+wheel_base = 2.85
+# overhang
+overh = (length - wheel_base)/2
+
+# overall width
+#width = 1.920
+width = 1.910
+
+# maximum steering angle (radians)
+beta_max = 0.6
+
+# minimum turning radius (meters)
+# R_min = overh/math.sin(beta_max)
+R_min = 5
+
+# inner turning radius - minimum
+Ri_min = np.sqrt(R_min**2 - wheel_base**2) - (width/2)
+
+# outer turning radius - minimum
+Re_min = np.sqrt((Ri_min+width)**2 + (wheel_base+overh)**2)
+
+# minimum length of the parking space required - 1 shot
+L_min = overh + np.sqrt(Re_min**2 - Ri_min**2)
+
+# Variables
 scan = Float32()
 scanIncrement = Float32()
 validCoordinatesBack = []
 validCoordinatesFront = []
-lidarPos = [0, 0]
 
-def callback(msg):
+
+startPos = [0, 0]
+currentVehiclePos = [Float64(), Float64()]
+currentVehicleSpeed = Float64()
+goalPos = [0, 0]
+
+step = 0
+count = 0
+
+def getCurrentVehiclePos():
+    return [currentVehiclePos[0].data  - startPos[0], currentVehiclePos[1].data - startPos[1]]
+
+def laserCallback(msg):
     scan.data = msg.ranges
     scanIncrement.data = msg.angle_increment
 
-laser_data = rospy.Subscriber('/car/laser/scan',LaserScan,callback)
+def vehicleCallback(msg):
+    currentVehiclePos[0].data = msg.pose.pose.position.x
+    currentVehiclePos[1].data = msg.pose.pose.position.y * -1.0
+    currentVehicleSpeed.data = msg.twist.twist.linear.x
     
+
+laser_data = rospy.Subscriber('/car/laser/scan',LaserScan,laserCallback)
+vehicle_position = rospy.Subscriber('/ground_truth/state',Odometry,vehicleCallback)
+
+  
 
 def getYOffset(hypotenuse, angle):  # Opposite line
     return(math.sin(angle) * hypotenuse)
@@ -34,11 +85,11 @@ def getXOffset(hypotenuse, angle):  # Adjecent line
 
 
 def getCoordinateFront(length, angle):
-    return [lidarPos[0] + getXOffset(length, angle), lidarPos[1] + getYOffset(length, angle)]
+    return [baseLinkOffset[0] + getXOffset(length, angle), baseLinkOffset[1] + getYOffset(length, angle)]
 
 
 def getCoordinateBack(length, angle):
-    return [lidarPos[0] + getXOffset(length, angle), lidarPos[1] + -getYOffset(length, angle)]
+    return [baseLinkOffset[0] + getXOffset(length, angle), baseLinkOffset[1] + -getYOffset(length, angle)]
 
 
 def findObstacles(data):  # Lidar works from back and rotates counter clockwise
@@ -59,25 +110,6 @@ def findObstacles(data):  # Lidar works from back and rotates counter clockwise
             elif(angle > (math.pi / 2) and angle < math.pi):  # Front 90 degrees
                 cord = getCoordinateFront(length, (angle - (math.pi / 2)))
                 validCoordinatesFront.append(cord)
-            
-
-# No longer in use(splits at getting correct cords)
-# def splitList(cords):
-#     # Split cord in two list
-#     prev = cords[0]
-#     validList1 = []  # consists of top group of cords(obstacle 1)
-#     validList2 = []  # consists of bottom group of cords(obstacle 2)
-#     next = False
-#     for cord in cords:
-#         if((cord[1] - prev[1]) > -3 and not next):
-#             validList1.append(cord)
-#         elif(not next):
-#             next = True
-#             prev = cord
-#         elif(next):
-#             validList2.append(cord)
-#         prev = cord
-#     return validList1, validList2
 
 
 def getCornersTop(obstacle):
@@ -126,18 +158,60 @@ def getObstacles():  # Obstacle 1 is behind car, obstacle 2 is in front of car
     return obstacle1, obstacle2
 
 
+def parkVehicle(obstacle1, obstacle2):
+    global step
+    global count
+    vel = 0
+    steer = 0
+
+    if(step == 1):
+        if(getCurrentVehiclePos()[0] < obstacle2[1][1]):
+            print(step, "Moving forward...")
+            vel = 12
+            steer = 0
+        else:
+            step = 2
+    elif(step == 2):
+        print(getCurrentVehiclePos()[1], (obstacle1[1][0] - obstacle1[0][0]))
+        if(getCurrentVehiclePos()[1] < (obstacle1[1][0] - obstacle1[0][0] - (width/1.5))):
+            print(step, "Turning into spot...")
+            vel = -100
+            steer = -0.45
+            count = count + 1
+        else:
+            step = 3
+            steer = 0.2
+            #count = count - 20  # Account for positive velocity first
+    elif(step == 3):
+        if(count > 0):
+            print(step, "Straigtening...")
+            vel = -100
+            steer = 0.45
+            count = count - 1
+        else:
+            step = 4
+    elif(step == 4):
+        if(True):
+            print(step, "Halting...")
+            vel = -100.0 * (currentVehicleSpeed.data)
+            steer = 0
+    elif(step == 0):
+        print("Vehicle init not complete!")
+        vel = 0
+        steer = 0
+
+    return vel, steer
+
+
 def main():
     rospy.init_node('car', anonymous=True) #make node
-
     obstacle1 = 0
     obstacle2 = 0
-    done = False
 
+
+    done = False
     while not rospy.is_shutdown():
         #print("Moving")
-        speed = 0
-        steer = 0
-        driveVehicle(speed, steer)
         if ((obstacle1 == 0) or (obstacle2 == 0) and not done):
             done = True
             findObstacles(scan.data)
@@ -145,8 +219,25 @@ def main():
             print("obstacle1", obstacle1)
             print("obstacle2", obstacle2)
 
+            global startPos
+            startPos = [currentVehiclePos[0].data, currentVehiclePos[1].data]
+            print("startPos", startPos)
+
+            goalPos = [(obstacle2[1][1] - obstacle1[1][1]) / 2, (obstacle1[1][0] - obstacle1[0][0]) / 2]
+            print("goalPos", goalPos)
+            
+            print("currentPos", getCurrentVehiclePos())
+            global step
+            step = 1
+        
+        velocity, steer = parkVehicle(obstacle1, obstacle2)
+        driveVehicle(velocity, steer)
+
+            
+        
 
 def driveVehicle(vel_cmd,steer_cmd):
+    print("Moving at velocity: ", vel_cmd, "and steer: ", steer_cmd, "!")
     wheel_rear_right = rospy.Publisher('/car/rr_wheel_controller/command', Float64, queue_size=10)
     wheel_rear_left = rospy.Publisher('/car/rl_wheel_controller/command', Float64, queue_size=10)
     steer_front = rospy.Publisher('/car/fl_steer_controller/command', Float64, queue_size=10)
